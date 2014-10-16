@@ -13,6 +13,7 @@
    </head>
  <body>
  <h1>What are you flickring</h1>
+ 
  <form action="#">
    <input type="text" name="q" id="q">
  </form>
@@ -20,7 +21,33 @@
    
  </ul>
  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script>
+  
+  var Flickr = {
+    init:function() {
+      this.template = '<li>{{photo}}</li>';
+      this.query = 'dogs';
+      this.photos = [];
+      this.timer;
 
+      this.cache();
+      this.bindEvents();
+      this.subscriptions();
+
+      //default state
+      this.searchInput.val( this.query );
+      $.publish( 'flickr/query');
+
+      return this; // return flickr object 
+    },
+    cache: function() {
+      this.container = $('ul.photos');
+      this.searchInput = $('#q');
+    },
+
+  };
+
+</script>
  <script>
  (function( $ ){
     var o = $( {} );
