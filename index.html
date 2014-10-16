@@ -1,14 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang ="en">
  <head>
    <meta charset = utf-8>
    <title>Custom Events</title>
+   <!-- Add fancyBox -->
+   <link rel="stylesheet" href="fancybox/source/jquery.fancybox.css" type="text/css" media="screen" />
    <style>
-      body {width:1200px; margin:auto;text-align: center;}
+      body {width:1200px; margin:auto;text-align: center; font-size:21px}
       ul {list-style: none;}
-      .images { float:left; margin-right:.8em;}
-      input[type=text] { width:300px; padding:.85em; background:pink; color:white;}
+      .images { float:left;}
+      input[type=text] { width:300px; padding:.85em; background:pink; color:white; font-size: 1.3em; text-align:center;}
    </style>
+
  </head>
 <body>
 <h1>What are you flickring</h1>
@@ -21,6 +24,7 @@
 </ul>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script type="text/javascript" src="fancybox/source/jquery.fancybox.pack.js"></script>   
 
 <script>
 (function( $ ){
@@ -40,7 +44,7 @@
   var Flickr = {
 
     init:function() {
-      this.query = '';
+      this.query = 'purple';
       this.photos = [];
       this.timer;
 
@@ -50,7 +54,7 @@
 
       //default state
       this.searchInput.val( this.query );
-      $.publish( 'flickr/results');
+      $.publish( 'flickr/query');
 
       return this; // return flickr object 
     },
@@ -96,16 +100,19 @@
           var secret = obj.secret;
           //koupaliště Rodina výlet
           var size = 'q';
+          var full = 'b';
           var url = 'https://farm' + farm + '.staticflickr.com/' + server + '/' + photoid + '_' + secret + '_' + size + '.jpg';
-          return '<li class="images"><img src="' + url + '"></li>';
+          return '<li class="images"><a class="fancybox" rel="group" href="https://farm' + farm + '.staticflickr.com/' + server + '/' + photoid + '_' + secret + '_' + full + '.jpg"><img src="' + url + '"></li></a>';
             //return '<li>' + obj.title + '</li>';
         }).join('')
-      ); 
+      );
     }
   };  
 window.Flickr = Flickr.init();
-
 })(jQuery);
+$(document).ready(function() {
+    $(".fancybox").fancybox();
+  });
 </script>
 </body>
 </html>    
