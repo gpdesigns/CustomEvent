@@ -9,7 +9,7 @@
       body {width:1200px; margin:auto;text-align: center; font-size:21px}
       ul {list-style: none;}
       .images { float:left;}
-      input[type=text] { width:300px; padding:.85em; background:pink; color:white; font-size: 1.3em; text-align:center;}
+      input[type=text] { border:1px solid #ccc; width:300px; padding:.25em; background:pink; color:white; font-size: 0.85em; text-align:center;}
    </style>
 
  </head>
@@ -80,7 +80,7 @@
       }, 400);
     },
     fetchJSON: function() {
-        $.getJSON( 'https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=ded9c79e37b82de77c454f33132584bc&text=' + Flickr.query + '&format=json&nojsoncallback=1', function( photo ){
+        $.getJSON( 'https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=ded9c79e37b82de77c454f33132584bc&tags=' + Flickr.query + '&format=json&nojsoncallback=1', function( photo ){
           //console.log(photo);
           Flickr.photos = photo.photos;
           $.publish( 'flickr/results' );
@@ -98,11 +98,12 @@
           var server = obj.server;
           var photoid = obj.id;
           var secret = obj.secret;
+          var title = obj.title;
           //koupaliště Rodina výlet
           var size = 'q';
           var full = 'b';
           var url = 'https://farm' + farm + '.staticflickr.com/' + server + '/' + photoid + '_' + secret + '_' + size + '.jpg';
-          return '<li class="images"><a class="fancybox" rel="group" href="https://farm' + farm + '.staticflickr.com/' + server + '/' + photoid + '_' + secret + '_' + full + '.jpg"><img src="' + url + '"></li></a>';
+          return '<li class="images"><a class="fancybox" rel="group" href="https://farm' + farm + '.staticflickr.com/' + server + '/' + photoid + '_' + secret + '_' + full + '.jpg" title="' + title +'"><img src="' + url + '"></li></a>';
             //return '<li>' + obj.title + '</li>';
         }).join('')
       );
