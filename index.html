@@ -1,117 +1,107 @@
 <!DOCTYPE html>
- <html lang="en">
-   <head>
-     <meta charset = utf-8>
-     <link rel="stylesheet" href="style.css">
-     <title>Custom Events</title>
-     <style>
-        body {width:1200px; margin:auto;text-align: center;}
-        ul {list-style: none;}
-        .images { float:left; margin-right:.8em;}
-        input[type=text] { width:300px; padding:.85em; background:pink; color:white;}
-     </style>
-   </head>
- <body>
+<html lang="en">
+ <head>
+   <meta charset = utf-8>
+   <title>Custom Events</title>
+   <style>
+      body {width:1200px; margin:auto;text-align: center;}
+      ul {list-style: none;}
+      .images { float:left; margin-right:.8em;}
+      input[type=text] { width:300px; padding:.85em; background:pink; color:white;}
+   </style>
+ </head>
+<body>
 <h1>What are you flickring</h1>
- <form action="#">
-   <input type="text" name="q" id="q">
- </form>
- <ul class="photos">
- <script id="template" type="text/x-handlebars-template">
+<form action="#">
+ <input type="text" name="q" id="q">
+</form>
+<ul class="photos">
+<script id="template" type="text/x-handlebars-template">
 
- </script>   
+</script>   
 
- </ul>
+</ul>
 
- <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <script>
-  
-  var Flickr = {
-    init:function() {
-      this.template = '<li>{{photo}}</li>';
-      this.query = 'dogs';
-      this.photos = [];
-      this.timer;
 
-      this.cache();
-      this.bindEvents();
-      this.subscriptions();
+var Flickr = {
+  init:function() {
+    this.template = '<li>{{photo}}</li>';
+    this.query = 'dogs';
+    this.photos = [];
+    this.timer;
 
-      //default state
-      this.searchInput.val( this.query );
-      $.publish( 'flickr/query');
+    this.cache();
+    this.bindEvents();
+    this.subscriptions();
 
-      return this; // return flickr object 
-    },
-    cache: function() {
-      this.container = $('ul.photos');
-      this.searchInput = $('#q');
-    },
-    bindEvents: function() {
-      this.searchInput.on('keyup', this.search)
-    },
-    subscriptions: function() {
-      $.subscribe( 'flickr/results', this.fetchJSON);
-      $.subscribe( 'flickr/results', this.renderResults);
-    },
-    search: function() {
-      var self = Flickr;
-        input = this;
-      clearTimeout( self.timer );
+    //default state
+    this.searchInput.val( this.query );
+    $.publish( 'flickr/query');
 
-      self.timer = ( input.value.length >= 3 ) && setTimeout(function() {
-        self.query = input.value;
-        $.publish( 'flickr/results');
-      }, 400);
-    },
-    fetchJSON: function() {
-        return $.getJSON( 'https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=ded9c79e37b82de77c454f33132584bc&text=' + Flickr.query + '&format=json&nojsoncallback=1', function( data ){
-          Flickr.photos = data.photos.photo;
-          $.publish( 'flickr/results' );
-        });
-    },
+    return this; // return flickr object 
+  },
+  cache: function() {
+    this.container = $('ul.photos');
+    this.searchInput = $('#q');
+  },
+  bindEvents: function() {
+    this.searchInput.on('keyup', this.search)
+  },
+  subscriptions: function() {
+    $.subscribe( 'flickr/results', this.fetchJSON);
+    $.subscribe( 'flickr/results', this.renderResults);
+  },
+  search: function() {
+    var self = Flickr;
+      input = this;
+    clearTimeout( self.timer );
 
-    
+    self.timer = ( input.value.length >= 3 ) && setTimeout(function() {
+      self.query = input.value;
+      $.publish( 'flickr/results');
+    }, 400);
+  },
+  fetchJSON: function() {
+      return $.getJSON( 'https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=ded9c79e37b82de77c454f33132584bc&text=' + Flickr.query + '&format=json&nojsoncallback=1', function( data ){
+        console.log(data);
+        Flickr.photos = data.photos.photo;
+        $.publish( 'flickr/results' );
+      });
+  },
 
-  };
+  renderResults: function() {
+    var self = Flickr,
+    frag = [],
+    photo;
 
-</script>
- <script>
- (function( $ ){
-    var o = $( {} );
-      $.each({
-        trigger: 'publish',
-        on: 'subscribe',
-        off: 'unsubscribe'
-      }, function(key, val){
-      jQuery[val] = function(){
-        o[key].apply( o, arguments );
-      };
-    });    
- })(jQuery);
-
- var query = 'cats';
-  $.getJSON('https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=ded9c79e37b82de77c454f33132584bc&text=hello&format=json&nojsoncallback=1', function( photo ){
-      $.publish('flickr/results', photo);
-      console.log(photo);
-    });
-
-  $.subscribe('flickr/results', function(e, photo){
-    $('ul.photos').html(
-      $.map( photo.photos.photo, function( obj, index ){
-        var farm = obj.farm;
-        var server = obj.server;
-        var photoid = obj.id;
-        var secret = obj.secret;
-        //koupaliště Rodina výlet
-        var size = 'q';
-        var url = 'https://farm' + farm + '.staticflickr.com/' + server + '/' + photoid + '_' + secret + '_' + size + '.jpg';
-        console.log(url);
-        return '<li class="images"><img src="' + url + '"></li>';
-          //return '<li>' + obj.title + '</li>';
+    self.container.html(
+      $.map( self.photo, function( obj, index ){
+        var t = 
+          obj.id.replace(/(http:[^\s]+)/, '<a href="$1">$1</a>')
+                .replace(/@([^\s]+)/, '<a href="https://flickr.com/$1">@$1</a>')
+                  ;
+            return self.template.replace(/{{photo}}/, t);
       }).join('')
-    ); 
-  });
+    );
+  }
+};
+window.Flickr = Flickr.init();
 </script>
- </body>
- </html>    
+<script>
+(function( $ ){
+  var o = $( {} );
+    $.each({
+      trigger: 'publish',
+      on: 'subscribe',
+      off: 'unsubscribe'
+    }, function(key, val){
+    jQuery[val] = function(){
+      o[key].apply( o, arguments );
+    };
+  });    
+})(jQuery);
+</script>
+</body>
+</html>    
