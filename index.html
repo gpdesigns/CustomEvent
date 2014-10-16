@@ -12,14 +12,17 @@
      </style>
    </head>
  <body>
- <h1>What are you flickring</h1>
- 
+<h1>What are you flickring</h1>
  <form action="#">
    <input type="text" name="q" id="q">
  </form>
  <ul class="photos">
-   
+ <script id="template" type="text/x-handlebars-template">
+
+ </script>   
+
  </ul>
+
  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <script>
   
@@ -44,6 +47,31 @@
       this.container = $('ul.photos');
       this.searchInput = $('#q');
     },
+    bindEvents: function() {
+      this.searchInput.on('keyup', this.search)
+    },
+    subscriptions: function() {
+      $.subscribe( 'flickr/results', this.fetchJSON);
+      $.subscribe( 'flickr/results', this.renderResults);
+    },
+    search: function() {
+      var self = Flickr;
+        input = this;
+      clearTimeout( self.timer );
+
+      self.timer = ( input.value.length >= 3 ) && setTimeout(function() {
+        self.query = input.value;
+        $.publish( 'flickr/results');
+      }, 400);
+    },
+    fetchJSON: function() {
+        return $.getJSON( 'https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=ded9c79e37b82de77c454f33132584bc&text=' + Flickr.query + '&format=json&nojsoncallback=1', function( data ){
+          Flickr.photos = data.photos.photo;
+          $.publish( 'flickr/results' );
+        });
+    },
+
+    
 
   };
 
