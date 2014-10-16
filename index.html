@@ -16,79 +16,12 @@
  <input type="text" name="q" id="q">
 </form>
 <ul class="photos">
-<script id="template" type="text/x-handlebars-template">
-
-</script>   
+ 
 
 </ul>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-<script>
 
-var Flickr = {
-  init:function() {
-    this.template = '<li>{{photo}}</li>';
-    this.query = 'dogs';
-    this.photos = [];
-    this.timer;
-
-    this.cache();
-    this.bindEvents();
-    this.subscriptions();
-
-    //default state
-    this.searchInput.val( this.query );
-    $.publish( 'flickr/query');
-
-    return this; // return flickr object 
-  },
-  cache: function() {
-    this.container = $('ul.photos');
-    this.searchInput = $('#q');
-  },
-  bindEvents: function() {
-    this.searchInput.on('keyup', this.search)
-  },
-  subscriptions: function() {
-    $.subscribe( 'flickr/results', this.fetchJSON);
-    $.subscribe( 'flickr/results', this.renderResults);
-  },
-  search: function() {
-    var self = Flickr;
-      input = this;
-    clearTimeout( self.timer );
-
-    self.timer = ( input.value.length >= 3 ) && setTimeout(function() {
-      self.query = input.value;
-      $.publish( 'flickr/results');
-    }, 400);
-  },
-  fetchJSON: function() {
-      return $.getJSON( 'https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=ded9c79e37b82de77c454f33132584bc&text=' + Flickr.query + '&format=json&nojsoncallback=1', function( data ){
-        console.log(data);
-        Flickr.photos = data.photos.photo;
-        $.publish( 'flickr/results' );
-      });
-  },
-
-  renderResults: function() {
-    var self = Flickr,
-    frag = [],
-    photo;
-
-    self.container.html(
-      $.map( self.photo, function( obj, index ){
-        var t = 
-          obj.id.replace(/(http:[^\s]+)/, '<a href="$1">$1</a>')
-                .replace(/@([^\s]+)/, '<a href="https://flickr.com/$1">@$1</a>')
-                  ;
-            return self.template.replace(/{{photo}}/, t);
-      }).join('')
-    );
-  }
-};
-window.Flickr = Flickr.init();
-</script>
 <script>
 (function( $ ){
   var o = $( {} );
@@ -101,6 +34,77 @@ window.Flickr = Flickr.init();
       o[key].apply( o, arguments );
     };
   });    
+})(jQuery);
+
+(function($){
+  var Flickr = {
+
+    init:function() {
+      this.query = '';
+      this.photos = [];
+      this.timer;
+
+      this.cache();
+      this.bindEvents();
+      this.subscriptions();
+
+      //default state
+      this.searchInput.val( this.query );
+      $.publish( 'flickr/results');
+
+      return this; // return flickr object 
+    },
+    cache: function() {
+      this.container = $('ul.photos');
+      this.searchInput = $('#q');
+    },
+    bindEvents: function() {
+      this.searchInput.on('keyup', this.search)
+    },
+    subscriptions: function() {
+      $.subscribe( 'flickr/query', this.fetchJSON);
+      $.subscribe( 'flickr/results', this.renderResults);
+    },
+    search: function() {
+      var self = Flickr,
+        input = this;
+      clearTimeout( self.timer );
+
+      self.timer = ( input.value.length >= 3 ) && setTimeout(function() {
+        self.query = input.value;
+        $.publish( 'flickr/query' );
+      }, 400);
+    },
+    fetchJSON: function() {
+        $.getJSON( 'https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=ded9c79e37b82de77c454f33132584bc&text=' + Flickr.query + '&format=json&nojsoncallback=1', function( photo ){
+          //console.log(photo);
+          Flickr.photos = photo.photos;
+          $.publish( 'flickr/results' );
+        });
+    },
+
+    renderResults: function() {
+      var self = Flickr,
+      frag = [],
+      photo;
+
+      self.container.html(
+        $.map( self.photos.photo, function( obj, index ){
+          var farm = obj.farm;
+          var server = obj.server;
+          var photoid = obj.id;
+          var secret = obj.secret;
+          //koupaliště Rodina výlet
+          var size = 'q';
+          var url = 'https://farm' + farm + '.staticflickr.com/' + server + '/' + photoid + '_' + secret + '_' + size + '.jpg';
+          return '<li class="images"><img src="' + url + '"></li>';
+            //return '<li>' + obj.title + '</li>';
+        }).join('')
+      ); 
+    }
+  };  
+window.Flickr = Flickr.init();
+
 })(jQuery);
 </script>
 </body>
